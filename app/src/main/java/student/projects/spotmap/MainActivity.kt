@@ -69,18 +69,9 @@ class MainActivity : AppCompatActivity() {
             R.id.menu_profile -> loadFragment(ProfileFragment())
             R.id.menu_store -> loadFragment(StoreFragment())
             R.id.menu_settings -> {
-                // TODO: Add SettingsFragment when ready
+                loadFragment(student.projects.spotmap.ui.settings.SettingsFragment())
             }
-            R.id.menu_logout -> {
-                // Sign out from Firebase
-                FirebaseAuth.getInstance().signOut()
 
-                // Redirect to LoginActivity
-                val intent = Intent(this, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
-            }
         }
     }
 

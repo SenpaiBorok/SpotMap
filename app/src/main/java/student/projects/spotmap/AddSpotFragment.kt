@@ -31,13 +31,14 @@ import student.projects.spotmap.PointsManager
 import student.projects.spotmap.R
 import student.projects.spotmap.api.ApiClient
 import student.projects.spotmap.api.SpotResponse
-import java.io.File
 
 class AddSpotFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var spotName: EditText
     private lateinit var spotDesc: EditText
     private lateinit var chipGroup: ChipGroup
+    private lateinit var chipGroupExtra: ChipGroup
+    private lateinit var chipExpand: Chip
     private lateinit var publicSwitch: Switch
     private lateinit var addPhotosBtn: Button
     private lateinit var submitBtn: Button
@@ -64,6 +65,8 @@ class AddSpotFragment : Fragment(), OnMapReadyCallback {
         spotName = root.findViewById(R.id.etSpotName)
         spotDesc = root.findViewById(R.id.etSpotDesc)
         chipGroup = root.findViewById(R.id.chipGroupTags)
+        chipGroupExtra = root.findViewById(R.id.chipGroupExtra)
+        chipExpand = root.findViewById(R.id.chipExpand)
         publicSwitch = root.findViewById(R.id.switchPublic)
         addPhotosBtn = root.findViewById(R.id.btnAddPhotos)
         submitBtn = root.findViewById(R.id.btnSubmitSpot)
@@ -71,6 +74,18 @@ class AddSpotFragment : Fragment(), OnMapReadyCallback {
 
         addPhotosBtn.setOnClickListener { pickImages() }
         submitBtn.setOnClickListener { submitSpot() }
+
+        // Setup the expand/collapse for extra chips
+        chipGroupExtra.visibility = View.GONE
+        chipExpand.setOnClickListener {
+            if (chipGroupExtra.visibility == View.GONE) {
+                chipGroupExtra.visibility = View.VISIBLE
+                chipExpand.text = "▲" // Up arrow
+            } else {
+                chipGroupExtra.visibility = View.GONE
+                chipExpand.text = "⋮" // Three dots
+            }
+        }
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.addSpotMap) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -159,6 +174,10 @@ class AddSpotFragment : Fragment(), OnMapReadyCallback {
             val chip = chipGroup.getChildAt(i) as Chip
             if (chip.isChecked) tags.add(chip.text.toString())
         }
+        for (i in 0 until chipGroupExtra.childCount) {
+            val chip = chipGroupExtra.getChildAt(i) as Chip
+            if (chip.isChecked) tags.add(chip.text.toString())
+        }
 
         if (name.isEmpty() || selectedLatLng == null) {
             Toast.makeText(requireContext(), "Name and location required", Toast.LENGTH_SHORT).show()
@@ -171,6 +190,29 @@ class AddSpotFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
+        if (!isPublic) {
+            val privateSpotRef = database.child("users").child(userId).child("privateSpots").push()
+            val privateSpotData = mapOf(
+                "spotId" to privateSpotRef.key,
+                "name" to name,
+                "description" to desc,
+                "tags" to tags,
+                "latitude" to selectedLatLng!!.latitude,
+                "longitude" to selectedLatLng!!.longitude,
+                "public" to false
+            )
+            privateSpotRef.setValue(privateSpotData)
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Private spot saved in Settings!", Toast.LENGTH_SHORT).show()
+                    resetForm()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Failed to save private spot: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
+            return
+        }
+
+        // Public spots -> API call
         val userIdBody = RequestBody.create("text/plain".toMediaTypeOrNull(), userId)
         val usernameBody = RequestBody.create("text/plain".toMediaTypeOrNull(), username)
         val nameBody = RequestBody.create("text/plain".toMediaTypeOrNull(), name)
@@ -210,30 +252,19 @@ class AddSpotFragment : Fragment(), OnMapReadyCallback {
 
         call.enqueue(object : Callback<SpotResponse> {
             override fun onResponse(call: Call<SpotResponse>, response: Response<SpotResponse>) {
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body?.success == true) {
-                        Toast.makeText(requireContext(), "Spot added successfully!", Toast.LENGTH_SHORT).show()
-
-                        // reward for spot creation
-                        pointsManager.giveSpotPoints(requireContext()) { success, msg ->
-                            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
-                        }
-
-                        resetForm()
-                    } else {
-                        Toast.makeText(requireContext(), "Failed: ${body?.message ?: "Unknown error"}", Toast.LENGTH_LONG).show()
+                if (response.isSuccessful && response.body()?.success == true) {
+                    Toast.makeText(requireContext(), "Public spot added!", Toast.LENGTH_SHORT).show()
+                    pointsManager.giveSpotPoints(requireContext()) { _, msg ->
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     }
+                    resetForm()
                 } else {
-                    Toast.makeText(requireContext(), "Server error: ${response.code()} - ${response.message()}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "Failed: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
-
-
             override fun onFailure(call: Call<SpotResponse>, t: Throwable) {
-                Toast.makeText(requireContext(), "Network error: ${t.message}", Toast.LENGTH_LONG).show()
-                Log.e("AddSpot", "API call failed", t)
+                Toast.makeText(requireContext(), "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -242,6 +273,9 @@ class AddSpotFragment : Fragment(), OnMapReadyCallback {
         spotName.text.clear()
         spotDesc.text.clear()
         chipGroup.clearCheck()
+        chipGroupExtra.clearCheck()
+        chipGroupExtra.visibility = View.GONE
+        chipExpand.text = "⋮"
         publicSwitch.isChecked = false
         selectedUris.clear()
         selectedImagesPreview.removeAllViews()
