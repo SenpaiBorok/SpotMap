@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="#F6F6F4">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:src="@drawable/ic_launcher_foreground"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:contentDescription="App Logo" />
+
+        <TextView
+            android:text="I Know A Spot"
+            android:textColor="#2E4B27"
+            android:textSize="22sp"
+            android:layout_marginTop="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:text="Turning gatekeeping into gateways"
+            android:textColor="#4F6D4A"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/emailInput"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:textColor="#2E4B27"
+            android:textColorHint="#4F6D4A"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp" />
+
+
+        <EditText
+            android:id="@+id/passwordInput"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:textColor="#2E4B27"
+            android:textColorHint="#4F6D4A"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp" />
+
+        <Button
+            android:id="@+id/loginBtn"
+            android:text="Login"
+            android:backgroundTint="#2E4B27"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:padding="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            style="@style/Widget.AppCompat.Button.Colored"/>
+
+        <!--Google Login documentation-->
+        <!--Android Developers. (2025). Integrate Google Sign-In into Your Android App. [online] Available at: https://developer.android.com/identity/legacy/gsi/legacy-sign-in [Accessed 25 Sep. 2025].-->
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/googleLoginBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:minHeight="48dp"/>
+
+        <TextView
+            android:id="@+id/forgotPassword"
+            android:layout_width="150dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="Forgot password?"
+            android:textColor="#4F6D4A"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/registerRedirect"
+            android:layout_width="246dp"
+            android:layout_height="33dp"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="Don't have an account? Register"
+            android:textColor="#4F6D4A"
+            android:textSize="14sp" />
+    </LinearLayout>
+</ScrollView>
